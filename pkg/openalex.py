@@ -233,6 +233,56 @@ def search_works_by_institution(
     return works
 
 
+def search_works_by_topic(
+    query: str,
+    top_n: int = 5,
+    mailto: Optional[str] = None,
+) -> list[dict]:
+    """
+    Return the *top_n* most-cited OpenAlex works matching a free-text query.
+
+    Uses the ``/works?search=`` endpoint (full-text relevance search across
+    title, abstract, and full text) combined with ``sort=cited_by_count:desc``
+    so the API does the ranking server-side in a single request.
+
+    Args:
+        query:  Free-text search string, e.g. ``"density functional theory"``.
+        top_n:  Number of top-cited works to return (default 5, max 200).
+        mailto: Optional e-mail for OpenAlex polite-pool routing.
+
+    Returns:
+        A list of up to *top_n* dicts, sorted by citation count descending::
+
+            {"title": str, "year": int | None, "citation_count": int}
+
+    Raises:
+        ValueError:   if no works are found for the query.
+        RuntimeError: if all retry attempts are exhausted.
+    """
+    _set_mailto(mailto)
+    per_page = min(top_n, 200)
+    params = urllib.parse.urlencode({
+        "search":   query,
+        "select":   "title,publication_year,cited_by_count",
+        "sort":     "cited_by_count:desc",
+        "per_page": per_page,
+        "page":     1,
+    })
+    url = f"{_BASE}/works?{params}"
+    data = _rate_limited_get(url)
+    results = data.get("results", [])
+    if not results:
+        raise ValueError(f"No OpenAlex works found for query: {query!r}")
+    return [
+        {
+            "title":          item.get("title") or "",
+            "year":           item.get("publication_year"),
+            "citation_count": item.get("cited_by_count", 0),
+        }
+        for item in results[:top_n]
+    ]
+
+
 # ── shared pagination helper ───────────────────────────────────────────────────
 
 def _fetch_works_for_entity(

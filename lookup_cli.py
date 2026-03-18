@@ -26,12 +26,16 @@ python lookup_cli.py --author "Jennifer Doudna" --max-results 10
 # Top-cited works from an institution (OpenAlex)
 python lookup_cli.py --institution "Carnegie Mellon University"
 python lookup_cli.py --institution "MIT" --top-n 5
+
+# Top-cited works on a topic (OpenAlex)
+python lookup_cli.py --topic "density functional theory"
+python lookup_cli.py --topic "CRISPR gene editing" --top-n 10
 """
 
 import argparse
 import sys
 from pkg.lookup import get_word_count, get_citation_count, lookup_work
-from pkg.openalex import search_works_by_author, search_works_by_institution
+from pkg.openalex import search_works_by_author, search_works_by_institution, search_works_by_topic
 
 
 def main():
@@ -44,6 +48,7 @@ def main():
     id_group.add_argument("--title",  metavar="TITLE",  help="Paper title (free-text search)")
     id_group.add_argument("--author",      metavar="AUTHOR", help="Author name — lists all works via OpenAlex")
     id_group.add_argument("--institution", metavar="NAME",   help="Institution name — lists top-cited works via OpenAlex")
+    id_group.add_argument("--topic",       metavar="QUERY",  help="Free-text topic — lists top-cited works via OpenAlex")
     parser.add_argument("--max-results", metavar="N", type=int, default=50,
                         help="Max works to return for --author (default 50; 0 = all)")
     parser.add_argument("--top-n", metavar="N", type=int, default=10,
@@ -96,6 +101,26 @@ def main():
             return
 
         print(f"Top {len(works)} most-cited works for: {args.institution!r}")
+        print(f"{'#':<4} {'Year':<6} {'Citations':<10} Title")
+        print("-" * 80)
+        for i, w in enumerate(works, 1):
+            year = w["year"] or "n/a"
+            print(f"{i:<4} {str(year):<6} {w['citation_count']:<10} {w['title']}")
+        return
+
+    # ── topic search via OpenAlex ──────────────────────────────────────────────
+    if args.topic:
+        try:
+            works = search_works_by_topic(
+                args.topic,
+                top_n=args.top_n,
+                mailto=args.mailto,
+            )
+        except Exception as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(1)
+
+        print(f"Top {len(works)} most-cited works for topic: {args.topic!r}")
         print(f"{'#':<4} {'Year':<6} {'Citations':<10} Title")
         print("-" * 80)
         for i, w in enumerate(works, 1):
