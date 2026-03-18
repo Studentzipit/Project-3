@@ -22,12 +22,16 @@ python lookup_cli.py --title "Attention is all you need" --file paper.txt
 # All works by an author (OpenAlex)
 python lookup_cli.py --author "Jennifer Doudna"
 python lookup_cli.py --author "Jennifer Doudna" --max-results 10
+
+# Top-cited works from an institution (OpenAlex)
+python lookup_cli.py --institution "Carnegie Mellon University"
+python lookup_cli.py --institution "MIT" --top-n 5
 """
 
 import argparse
 import sys
 from pkg.lookup import get_word_count, get_citation_count, lookup_work
-from pkg.openalex import search_works_by_author
+from pkg.openalex import search_works_by_author, search_works_by_institution
 
 
 def main():
@@ -38,9 +42,12 @@ def main():
     id_group.add_argument("--doi",    metavar="DOI",    help="Paper DOI, e.g. 10.1145/3173574.3174223")
     id_group.add_argument("--arxiv",  metavar="ID",     help="ArXiv ID, e.g. 1706.03762")
     id_group.add_argument("--title",  metavar="TITLE",  help="Paper title (free-text search)")
-    id_group.add_argument("--author", metavar="AUTHOR", help="Author name — lists all works via OpenAlex")
+    id_group.add_argument("--author",      metavar="AUTHOR", help="Author name — lists all works via OpenAlex")
+    id_group.add_argument("--institution", metavar="NAME",   help="Institution name — lists top-cited works via OpenAlex")
     parser.add_argument("--max-results", metavar="N", type=int, default=50,
                         help="Max works to return for --author (default 50; 0 = all)")
+    parser.add_argument("--top-n", metavar="N", type=int, default=10,
+                        help="Number of top-cited works for --institution (default 10)")
     parser.add_argument("--mailto", metavar="EMAIL",
                         help="Your e-mail for OpenAlex polite-pool routing")
     parser.add_argument("--file", metavar="PATH", help="Path to a text file to count words in")
@@ -70,6 +77,30 @@ def main():
             year = w["year"] or "n/a"
             print(f"{i:<4} {str(year):<6} {w['citation_count']:<10} {w['title']}")
         print(f"\n{len(works)} work(s) found for author: {args.author!r}")
+        return
+
+    # ── institution search via OpenAlex ───────────────────────────────────────
+    if args.institution:
+        try:
+            works = search_works_by_institution(
+                args.institution,
+                top_n=args.top_n,
+                mailto=args.mailto,
+            )
+        except Exception as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(1)
+
+        if not works:
+            print("No works found.")
+            return
+
+        print(f"Top {len(works)} most-cited works for: {args.institution!r}")
+        print(f"{'#':<4} {'Year':<6} {'Citations':<10} Title")
+        print("-" * 80)
+        for i, w in enumerate(works, 1):
+            year = w["year"] or "n/a"
+            print(f"{i:<4} {str(year):<6} {w['citation_count']:<10} {w['title']}")
         return
 
     # ── word count only ────────────────────────────────────────────────────────
