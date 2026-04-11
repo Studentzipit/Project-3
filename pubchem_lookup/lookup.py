@@ -10,7 +10,7 @@ def resolve_cids(name_list, cas_list):
 
     cid_from_cas = []
     for cas in cas_list:
-        if str(cas) == 'nan':
+        if cas is None or str(cas) == 'nan':
             cid_from_cas.append(0)
             continue
         cids = pcp.get_cids(str(cas), 'name')

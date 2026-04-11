@@ -13,5 +13,8 @@ dependencies = [
     "openpyxl",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [project.scripts]
 pubchem-lookup = "pubchem_lookup.cli:main"
