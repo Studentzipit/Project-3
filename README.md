@@ -123,6 +123,16 @@ GHS Hazard Statements: H315: Causes skin irritation
 ```
 
 
+## Testing
+
+Install dev dependencies and run the test suite:
+
+```
+pip install -e ".[dev]"
+pytest tests/
+```
+
+
 ## Not Found Cases
 
 If a compound cannot be matched in PubChem, the output row will show:
