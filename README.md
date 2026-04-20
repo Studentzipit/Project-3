@@ -1,10 +1,10 @@
-[![tests](https://github.com/Studentzipit/Project-2/actions/workflows/tests.yml/badge.svg)](https://github.com/Studentzipit/Project-2/actions/workflows/tests.yml)
+[![tests](https://github.com/Studentzipit/Project-3/actions/workflows/tests.yml/badge.svg)](https://github.com/Studentzipit/Project-3/actions/workflows/tests.yml)
 
 # PubChem API Lookup Package
 
 **Author:** Zachary Thompson  
-**Version:** 0.1.0  
-**Repository:** https://github.com/Studentzipit/Project-2
+**Version:** 0.2.0  
+**Repository:** https://github.com/Studentzipit/Project-3
 
 
 ## Overview
@@ -28,8 +28,8 @@ information, and writes structured results to an output Excel file.
 
 1. Clone the repository:
    ```
-   git clone https://github.com/Studentzipit/Project-2.git
-   cd Project-2
+   git clone https://github.com/Studentzipit/Project-3.git
+   cd Project-3
    ```
 
 2. Create and activate a virtual environment (recommended):
